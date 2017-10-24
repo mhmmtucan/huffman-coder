@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\.android\build-cache\48c4559298b42b2540ca57fdd62afd389322cb33\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="cb454b52545859ed2f24a6c01366805b0fa04b22">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_2a2ce09e26a882df34cc5f6f0d5afab2f82f7977\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\.android\build-cache\abae37ebbfc8ce27fc25f87b6c3e7eb7a1a6fca4\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="d7c42c80f6509b9ea4db28ca7859ffae08ec5741">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_ee5dc89e364e724284e46ddcc6db9b6acd236af2\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="3be78ebc2706b2e1fe2f12d5726887a92d6c183b">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run_ce55811f2c3dd4c1fc6f355bbb989a4a8dea76bf\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\.android\build-cache\a50c6e2080254019c8e5e090638f619da6cb4f08\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="8fe8a8f77d651982ce5e18f6187dc4daf914ac57">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_85b7fbca1c1dd2333ee0d15a4a616f576b64be7f\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\25.2.0\support-annotations-25.2.0.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="4a5a82a027706397fff621b22fd6fa796e91d7c5">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10\support-annotations-25.2.0_441c7f61a703e973276548fb8b23e2be90d00a9b\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\.android\build-cache\82b390e7ea809ac3fff2f02e9fd2d0d080d69f5b\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="44ee06abb66da30f5855e6bf54574e64cdcd982a">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_956d6591e44dcd393a6a78eaf5d14d855bbbb467\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\.android\build-cache\4df5fa5659faf8249b8839285f4419aaa5c6e161\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="702d339bc0a81d21354cd7e2cf2b67225fa4a16c">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_e437f9f0f2ad2e68b175418171da68f57c4eea81\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\.android\build-cache\92013102e6dc93e08ae6b46b5e83f8789c9af16e\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="ee394a892dd21c03a528139c1e8d4e0e1264ac84">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_382738be577af87500cc5a4e7e48ef661b1faba2\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\.android\build-cache\8b5415419312054e9ecfc4fa4a7ee43adf9a8acc\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="e820b7be8c035dd522da4bc822e8a76c8e27921a">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_88b9cb9f069ac597e2316d90efde0102bccf6dcc\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="626ab95b6daaa7ad534082bc88c9b9426de80664">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run-bootstrap_8b6eb99978efe465ef4feca380192ce6ae7700b9\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\.android\build-cache\4fc535e660ebc70db404605dde8b6436d2c2ca78\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="810f41e5b7fd99f196ebeabe865ba2c54e7e76dc">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_70cecfa03dea6bac3a296dada07d0bbfafacb07a\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\.android\build-cache\f1ef62ab725a637ac899f9ae7543c7e8ae9bd386\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="fa0446a14ed5dd3725047d6399ffea771a564b30">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_1a5528052250b68c65e187a0b26e49eb7b3d317c\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\AppData\Local\Android\sdk\extras\m2repository\com\android\support\constraint\constraint-layout-solver\1.0.2\constraint-layout-solver-1.0.2.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="b9cd8fc6bd15cb915735d34535db30ece0c44603">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10\constraint-layout-solver-1.0.2_57a9b3d965d39844a9f1d0d4e49f7cd2bc27d04d\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\malkoch\.android\build-cache\29711e93e9b296563e2eabaafc1ea21a014dcd37\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="67eb33110dbacb46a48175b08ae0c96761d2c17d">
+        <dex dex="C:\Users\malkoch\Desktop\huffman-coder\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_446ba86e4dd18c22b57173e063701c98133dc039\classes.dex" />
+    </item>
+
+</items>
