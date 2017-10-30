@@ -1,5 +1,6 @@
 package com.example.malkoch.huffman_coder;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -8,10 +9,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
@@ -221,7 +232,6 @@ class HuffmanCode {
 
     public static void Run() {
         String test = "A SIMPLE STRING TO BE ENCODED USING A MINIMAL NUMBER OF BITS";
-
         // we will assume that all our characters will have
         // code less than 256, for simplicity
         int[] charFreqs = new int[256];
@@ -248,21 +258,45 @@ class HuffmanCode {
 public class MainActivity extends AppCompatActivity {
 
     public static final int FILE_SELECT_CODE = 0;
-
+    ListView listView;
+    String username;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ArrayAdapter<String> mAdapter = new ArrayAdapter<String>(MainActivity.this,
+                android.R.layout.simple_list_item_1,
+                getResources().getStringArray(R.array.users));
+        listView = (ListView) findViewById(R.id.listview1);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // TODO: action when item clicked
+            }
+        });
+        listView.setAdapter(mAdapter);
+        username = getIntent().getStringExtra("EXTRA_USERNAME");
+        Log.d("user",username);
     }
 
     @Override
     protected void onActivityResult(int requst_code, int result_code, Intent data) {
+        String fileContent;
         switch (requst_code) {
             case FILE_SELECT_CODE:
                 if(result_code == RESULT_OK) {
                     Uri uri = data.getData();
                     Log.d("file", "File Uri: " + uri.toString());
-
+                    /*
+                    try {
+                        fileContent = ReadFromFile(uri);
+                        Log.d("file", fileContent);
+                    }
+                    catch (FileNotFoundException ex) {
+                        Log.d("file", ex.toString());
+                    }
+                    */
                     try {
                         String path = FileUtils.GetPath(this, uri);
                         Log.d("file", "File path: " + path);
@@ -284,6 +318,30 @@ public class MainActivity extends AppCompatActivity {
         //button.setText(str);
         HuffmanCode.Run();
         ShowFileChooser();
+    }
+
+    private String ReadFromFile(Uri uri) throws FileNotFoundException {
+
+        File f = new File(String.valueOf(uri));
+        FileInputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(f);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        int i;
+        try {
+            i = inputStream.read();
+            while (i != -1) {
+                byteArrayOutputStream.write(i);
+                i = inputStream.read();
+            }
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return byteArrayOutputStream.toString();
     }
 
     private void ShowFileChooser() {
