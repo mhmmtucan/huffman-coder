@@ -97,6 +97,17 @@ class FileUtils {
     }
 }
 
+class Data {
+    String encoded_data;
+    int num_of_bits;
+    int[] freqs;
+
+    public Data(String d, int b) {
+        encoded_data = d;
+        num_of_bits = b;
+    }
+}
+
 abstract class HuffmanTree implements Comparable<HuffmanTree> {
     public final int frequency; // the frequency of this tree
     public HuffmanTree(int freq) { frequency = freq; }
@@ -127,18 +138,9 @@ class HuffmanNode extends HuffmanTree {
 }
 
 class HuffmanEncoder {
+    private static Map<Character, String> map = new HashMap<Character, String>();
 
-}
-
-class HuffmanDecoder {
-
-}
-
-class HuffmanCode {
-    static Map<Character, String> map = new HashMap<Character, String>();
-
-    // input is an array of frequencies, indexed by character code
-    public static HuffmanTree buildTree(int[] charFreqs) {
+    private static HuffmanTree buildTree(int[] charFreqs) {
         PriorityQueue<HuffmanTree> trees = new PriorityQueue<HuffmanTree>();
         // initially, we have a forest of leaves
         // one for each non-empty character
@@ -159,31 +161,7 @@ class HuffmanCode {
         return trees.poll();
     }
 
-    public static void printCodes(HuffmanTree tree, StringBuffer prefix) {
-        assert tree != null;
-
-        if (tree instanceof HuffmanLeaf) {
-            HuffmanLeaf leaf = (HuffmanLeaf)tree;
-
-            // print out character, frequency, and code for this leaf (which is just the prefix)
-            Log.d("huffman", leaf.value + "\t" + leaf.frequency + "\t" + prefix);
-
-        } else if (tree instanceof HuffmanNode) {
-            HuffmanNode node = (HuffmanNode)tree;
-
-            // traverse left
-            prefix.append('0');
-            printCodes(node.left, prefix);
-            prefix.deleteCharAt(prefix.length()-1);
-
-            // traverse right
-            prefix.append('1');
-            printCodes(node.right, prefix);
-            prefix.deleteCharAt(prefix.length()-1);
-        }
-    }
-
-    public static void StoreCodes(HuffmanTree tree, String prefix) {
+    private static void StoreCodes(HuffmanTree tree, String prefix) {
         assert tree != null;
 
         if(tree instanceof HuffmanLeaf) {
@@ -199,16 +177,14 @@ class HuffmanCode {
         }
     }
 
-    public static String HuffmanEncode(HuffmanTree tree, String str) {
+    private static Data Encode(HuffmanTree tree, String str) {
         assert tree != null;
-
+        //ret is a binary string. something like 010100101011010010101
         String ret = "";
 
         for(char c : str.toCharArray()) {
             ret += map.get(c);
         }
-
-        Log.d("huffman", "len: " + ret.length());
 
         char[] chars = new char[0];
         int offset = 0; // first couple of characters will be char map and how many bit we have encoded
@@ -233,28 +209,117 @@ class HuffmanCode {
             }
         }
 
-        for(int i = 0; i < chars.length; i++) {
-            Log.d("huffman", (int)chars[i] + " ");
-        }
+        //sending the length and the encoded string
+        //encoded string is what we have build from binary string
+        return new Data(new String(chars), ret.length());
+    }
 
-        System.out.println();
+    public static Data Run (String to_encode) {
+        String test = "A paragraph is a component of fictional prose and non-fiction writings. " +
+                "When writing essays, research papers, books, etc., new paragraphs are indented to show their beginnings. " +
+                "Each new paragraph begins with a new indentation. " +
+                "The purpose of a paragraph is to express a speaker's thoughts on a particular point in a clear way " +
+                "that is unique and specific to that paragraph. " +
+                "In other words, paragraphs shouldn't be mixing thoughts or ideas. " +
+                "When a new idea is introduced, generally, a writer will introduce a new paragraph.";
 
-        for(int i = 0; i < chars.length; i++) {
-            Log.d("huffman", "" + chars[i]);
-        }
+        int[] charFreqs = new int[256];
+        // read each character and record the frequencies
 
-        System.out.println();
+        for (char c : test.toCharArray())
+            charFreqs[c]++;
+
+        // build tree
+        HuffmanTree tree = buildTree(charFreqs);
+        StoreCodes(tree, "");
+
+        Data ret = Encode(tree, test);
+        String encoded_string = ret.encoded_data;
+        ret.freqs = charFreqs;
+
+        Log.d("huffmancoder", "Original String: " + test);
+        Log.d("huffmancoder", "Original String Length: " + test.length());
+
+        Log.d("huffmancoder", "Encoded String: " + encoded_string);
+        Log.d("huffmancoder", "Encoded String Length: " + encoded_string.length());
 
         return ret;
     }
+}
 
-    public static String HuffmanDecode(HuffmanTree tree, String str) {
+class HuffmanDecoder {
+    private static Map<Character, String> map = new HashMap<Character, String>();
+
+    private static HuffmanTree buildTree(int[] charFreqs) {
+        PriorityQueue<HuffmanTree> trees = new PriorityQueue<HuffmanTree>();
+        // initially, we have a forest of leaves
+        // one for each non-empty character
+        for (int i = 0; i < charFreqs.length; i++)
+            if (charFreqs[i] > 0)
+                trees.offer(new HuffmanLeaf(charFreqs[i], (char)i));
+
+        assert trees.size() > 0;
+        // loop until there is only one tree left
+        while (trees.size() > 1) {
+            // two trees with least frequency
+            HuffmanTree a = trees.poll();
+            HuffmanTree b = trees.poll();
+
+            // put into new node and re-insert into queue
+            trees.offer(new HuffmanNode(a, b));
+        }
+        return trees.poll();
+    }
+
+    private static void StoreCodes(HuffmanTree tree, String prefix) {
         assert tree != null;
 
+        if(tree instanceof HuffmanLeaf) {
+            HuffmanLeaf leaf = (HuffmanLeaf) tree;
+
+            map.put(leaf.value, prefix);
+        }
+        else if(tree instanceof HuffmanNode) {
+            HuffmanNode node = (HuffmanNode) tree;
+
+            StoreCodes(node.left, prefix + '0');
+            StoreCodes(node.right, prefix + '1');
+        }
+    }
+
+    private static String Decode(HuffmanTree tree, String str, int num) {
+        assert tree != null;
+
+        String binary = "";
         String ret = "";
         HuffmanTree current = tree;
+        //binary will be a binary string that contains only 1 or 0
+        //ret will be decoded string. human readable string
 
-        for(char c : str.toCharArray()) {
+        for(int i = 0; i < str.length(); i++) {
+            String part = "";
+            char c = str.charAt(i);
+
+            if(i == 0) {
+                int x = num % 8;
+
+                for(int j = 0; j < x; j++) {
+                    part = ("" + ((int) c & 1)) + part;
+                    c = (char) (((int) c) >> 1);
+                }
+            }
+            else {
+                for(int j = 0; j < 8; j++) {
+                    part = ("" + ((int) c & 1)) + part;
+                    c = (char) (((int) c) >> 1);
+                }
+
+            }
+
+            binary = binary + part;
+        }
+
+        for(char c : binary.toCharArray()) {
             if(current instanceof HuffmanNode) {
                 HuffmanNode current_node = (HuffmanNode) current;
                 if(c == '0') {
@@ -275,28 +340,15 @@ class HuffmanCode {
         return ret;
     }
 
-    public static void Run() {
-        String test = "A SIMPLE STRING TO BE ENCODED USING A MINIMAL NUMBER OF BITS";
-        // we will assume that all our characters will have
-        // code less than 256, for simplicity
-        int[] charFreqs = new int[256];
-        // read each character and record the frequencies
-        for (char c : test.toCharArray())
-            charFreqs[c]++;
+    public static void Run(Data data) {
 
         // build tree
-        HuffmanTree tree = buildTree(charFreqs);
+        HuffmanTree tree = buildTree(data.freqs);
         StoreCodes(tree, "");
 
-        // print out results
-        Log.d("huffman", "SYMBOL\tWEIGHT\tHUFFMAN CODE");
-        printCodes(tree, new StringBuffer());
-
-        String encoded_string = HuffmanEncode(tree, test);
-        Log.d("huffman", "encoded string: " + encoded_string);
-
-        String decoded_string = HuffmanDecode(tree, encoded_string);
-        Log.d("huffman", "decoded string: " + decoded_string);
+        String decoded_string = Decode(tree, data.encoded_data, data.num_of_bits);
+        Log.d("huffmancoder", "Decoded String: " + decoded_string);
+        Log.d("huffmancoder", "Decoded String Length: " + decoded_string.length());
     }
 }
 
@@ -323,6 +375,10 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(mAdapter);
         username = getIntent().getStringExtra("EXTRA_USERNAME");
         Log.d("user",username);
+
+        //HuffmanEncoder returns Data: (String: encoded string, int[]: character frequencies, int: number of bits we need to read)
+        //HuffmanDecoder needs Data: (String: a string to decode, int[]: character frequencies, int: number of bits we are going to read)
+        HuffmanDecoder.Run(HuffmanEncoder.Run(""));
 
         String host = "192.168.2.106";
         String port = "12345";
@@ -366,7 +422,6 @@ public class MainActivity extends AppCompatActivity {
         //view.setText(str);
         //Button button = (Button) findViewById(R.id.button);
         //button.setText(str);
-        HuffmanCode.Run();
         ShowFileChooser();
     }
 
