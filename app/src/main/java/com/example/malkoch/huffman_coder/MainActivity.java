@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,17 +17,61 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+
+class Client extends AsyncTask<String, Void, String> {
+    @Override
+    protected String doInBackground(String... args) {
+        String hostname = args[0];
+        int port_number = Integer.parseInt(args[1]);
+        String data = args[2];
+
+        String ret = "";
+
+        try {
+            Socket socket = new Socket(hostname, port_number);
+
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true/*false*/);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            //while(!in.ready());
+            String response = in.readLine();
+            Log.d("client", response);
+
+            //while(in.ready()) {
+            //    ret = ret + (char) in.read();
+            //}
+
+            //out.write(data);
+            out.println(data);
+            //out.flush();
+        }
+        catch (Exception e) {
+            System.out.print(e.toString());
+        }
+
+        return ret;
+    }
+
+    @Override
+    protected void onPostExecute(String result) {
+
+    }
+}
 
 class FileUtils {
     public static String GetPath(Context context, Uri uri) throws URISyntaxException {
@@ -278,6 +323,11 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(mAdapter);
         username = getIntent().getStringExtra("EXTRA_USERNAME");
         Log.d("user",username);
+
+        String host = "192.168.2.106";
+        String port = "12345";
+        Client client = new Client();
+        client.execute(host, port, username);
     }
 
     @Override

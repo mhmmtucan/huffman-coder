@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/huffman-coder.iml" filepath="$PROJECT_DIR$/.idea/huffman-coder.iml" />
+      <module fileurl="file://$PROJECT_DIR$/huffman-coder.iml" filepath="$PROJECT_DIR$/huffman-coder.iml" />
     </modules>
   </component>
 </project>
