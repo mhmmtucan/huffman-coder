@@ -29,10 +29,8 @@ def encoder(file):
         for ch in long_str:
             symb2freq[ch] += 1
         huff = huffman(symb2freq)
-        #print ("Symbol\tHuffman Code")
         codemap = {}
         for p in huff:
-            #print ("%s\t%s" % (p[0],p[1]))
             char = p[0]
             codemap[p[0]] = p[1]
         counter = 1
@@ -42,25 +40,31 @@ def encoder(file):
             code = codemap[ch]
             codestr = codestr + code
         binarytext = ''
+        counter2 = 0
+        while (MAX_BITS - (len(codestr) % MAX_BITS) > counter2):
+                counter2 = counter2 + 1;
+                binarytext = '0' + binarytext
+        counter = counter2
         for ch in codestr:
             counter = counter + 1
             binarytext = binarytext + ch
-            if counter%MAX_BITS == 1:
+            if counter%MAX_BITS == 0:
                 num = int(binarytext,2)
                 encodedtext = encodedtext + chr(num)
                 binarytext = ''
-            if counter == len(codestr)+1:
-                encodedtext = encodedtext + binarytext
+                flag = 1
         encodedtext_file = open("encodedtext.txt","w",encoding='utf-8')
         encodedtext_file.write("%s" % encodedtext)
         encodedtext_file.close()
         
     else:
         print ('file not found')
-        
-    return huff
+
+
+    return symb2freq,len(codestr)
     
-def decoder(file,huff):
+def decoder(file,symb2freq,length):
+    huff = huffman(symb2freq)
     if os.path.exists(file):
         fp = open(file, 'r',encoding='utf-8')
         long_str = fp.read()
@@ -68,15 +72,19 @@ def decoder(file,huff):
         print ('\nEncoded Text: '+ long_str  + '\n')
         binary_text =''
         get_bin = lambda x: format(x, 'b')
+        delete = MAX_BITS - length % MAX_BITS
+        flag = 0
         for ch in long_str:
-            if ch != '0' and ch != '1':
-                num = ord(ch)
-                binary = str(get_bin(num))
-                if len(binary) != 8:
-                    binary = ((8 - len(binary)) * '0') + binary
+            num = ord(ch)
+            binary = str(get_bin(num))
+            if len(binary) != 8:
+                binary = ((8 - len(binary)) * '0') + binary
+                if flag == 0:
+                    binary = binary[delete:]
+                    flag = 1
                 binary_text = binary_text + binary
             else:
-                binary_text = binary_text + ch
+                binary_text = binary_text + binary
         codemap = {}
         for p in huff:
             char = p[1]
@@ -95,6 +103,6 @@ if __name__=='__main__':
 
     
     original_file = 'text.txt'
-    huff = encoder(original_file)
+    symb2freq,length = encoder(original_file)
     encoded_file = 'encodedtext.txt'
-    decoder(encoded_file,huff)
+    decoder(encoded_file,symb2freq,length)
