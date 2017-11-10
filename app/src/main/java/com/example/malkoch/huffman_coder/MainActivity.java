@@ -17,7 +17,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,43 +29,74 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
 class Client extends AsyncTask<String, Void, String> {
+    Socket socket;
+
+    public Client(String hostname, int port_number) {
+        try {
+            socket = new Socket(hostname, port_number);
+        }
+        catch (Exception e) {
+            Log.d("error", e.toString());
+        }
+    }
+
     @Override
     protected String doInBackground(String... args) {
-        String hostname = args[0];
-        int port_number = Integer.parseInt(args[1]);
-        String data = args[2];
+        String data = args[0];
 
         String ret = "";
 
         try {
-            Socket socket = new Socket(hostname, port_number);
-
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true/*false*/);
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            //while(!in.ready());
-            String response = in.readLine();
-            Log.d("client", response);
-
-            //while(in.ready()) {
-            //    ret = ret + (char) in.read();
-            //}
-
-            //out.write(data);
             out.println(data);
-            //out.flush();
+            out.flush();
+
+            while(true) {
+                String response = in.readLine();
+                //Log.d("serverresponse", "response : " + response);
+
+                JSONObject json_object = new JSONObject(response);
+
+                if(json_object.has("users")) {
+                    //getting users
+                    Log.d("serverresponse", "getting the userlist");
+                }
+                else {
+                    //getting data
+                    String sender = json_object.getString("sender");
+                    String reciever = json_object.getString("reciever");
+                    String map = json_object.getString("map");
+                    int number = json_object.getInt("len");
+                    String text = json_object.getString("text");
+
+                    JSONObject json_map = new JSONObject(map);
+
+                    Log.d("serverresponse", "sender: " + sender);
+                    Log.d("serverresponse", "reciever: " + reciever);
+                    Log.d("serverresponse", "map: " + map);
+                    Log.d("serverresponse", "number: " + number);
+                    Log.d("serverresponse", "text: " + text);
+
+                    //Log.d("serverresponse", "getting the data");
+                }
+            }
         }
         catch (Exception e) {
-            System.out.print(e.toString());
+            Log.d("error", e.toString());
         }
 
         return ret;
@@ -83,11 +118,11 @@ class FileUtils {
                 cursor = context.getContentResolver().query(uri, projection, null, null, null);
                 int column_index = cursor.getColumnIndexOrThrow("_data");
                 if(cursor.moveToFirst()) {
-                    //return cursor.getString(column_index);
+                    return cursor.getString(column_index);
                 }
             }
             catch (Exception e) {
-                Log.d("file", e.toString());
+                Log.d("fileinformation", "getting path: " + e.toString());
             }
         }
         else if("file".equalsIgnoreCase(uri.getScheme())) {
@@ -226,19 +261,19 @@ class HuffmanEncoder {
         int[] charFreqs = new int[256];
         // read each character and record the frequencies
 
-        for (char c : test.toCharArray())
+        for (char c : to_encode.toCharArray())
             charFreqs[c]++;
 
         // build tree
         HuffmanTree tree = buildTree(charFreqs);
         StoreCodes(tree, "");
 
-        Data ret = Encode(tree, test);
+        Data ret = Encode(tree, to_encode);
         String encoded_string = ret.encoded_data;
         ret.freqs = charFreqs;
 
-        Log.d("huffmancoder", "Original String: " + test);
-        Log.d("huffmancoder", "Original String Length: " + test.length());
+        Log.d("huffmancoder", "Original String: " + to_encode);
+        Log.d("huffmancoder", "Original String Length: " + to_encode.length());
 
         Log.d("huffmancoder", "Encoded String: " + encoded_string);
         Log.d("huffmancoder", "Encoded String Length: " + encoded_string.length());
@@ -353,6 +388,9 @@ class HuffmanDecoder {
 }
 
 public class MainActivity extends AppCompatActivity {
+    private Socket socket;
+    private PrintWriter out;
+
 
     public static final int FILE_SELECT_CODE = 0;
     ListView listView;
@@ -378,12 +416,35 @@ public class MainActivity extends AppCompatActivity {
 
         //HuffmanEncoder returns Data: (String: encoded string, int[]: character frequencies, int: number of bits we need to read)
         //HuffmanDecoder needs Data: (String: a string to decode, int[]: character frequencies, int: number of bits we are going to read)
-        HuffmanDecoder.Run(HuffmanEncoder.Run(""));
+        //HuffmanDecoder.Run(HuffmanEncoder.Run(""));
 
         String host = "192.168.2.106";
-        String port = "12345";
-        Client client = new Client();
-        client.execute(host, port, username);
+        int port = 12345;
+
+        new Thread(new ClientThread()).start();
+    }
+
+    class ClientThread implements Runnable {
+        @Override
+        public void run() {
+            try {
+                socket = new Socket("192.168.2.106", 12345);
+                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+
+                out.println(username);
+                out.flush();
+
+                while(true) {
+                    //start reading
+                }
+            }
+            catch(UnknownHostException e1) {
+                e1.printStackTrace();
+            }
+            catch(IOException e1) {
+                e1.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -393,23 +454,26 @@ public class MainActivity extends AppCompatActivity {
             case FILE_SELECT_CODE:
                 if(result_code == RESULT_OK) {
                     Uri uri = data.getData();
-                    Log.d("file", "File Uri: " + uri.toString());
-                    /*
+                    Log.d("fileinformation", "File Uri: " + uri.toString());
+
                     try {
                         fileContent = ReadFromFile(uri);
-                        Log.d("file", fileContent);
+                        Log.d("fileinformation", fileContent);
+
+                        out.println(HuffmanEncoder.Run(fileContent).encoded_data);
+                        out.flush();
                     }
                     catch (FileNotFoundException ex) {
-                        Log.d("file", ex.toString());
+                        Log.d("fileinformation", "reading file: " + ex.toString());
                     }
-                    */
-                    try {
+
+                    /*try {
                         String path = FileUtils.GetPath(this, uri);
-                        Log.d("file", "File path: " + path);
+                        Log.d("fileinformation", "File path: " + path);
                     }
                     catch (URISyntaxException ex) {
-                        Log.d("file", ex.toString());
-                    }
+                        Log.d("fileinformation", "getting file path: " + ex.toString());
+                    }*/
                 }
                 break;
         }
@@ -426,13 +490,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String ReadFromFile(Uri uri) throws FileNotFoundException {
+        String path = "";
+        try {
+            path = FileUtils.GetPath(this, uri);
+            Log.d("fileinformation", "File path: " + path);
+        }
+        catch (URISyntaxException ex) {
+            Log.d("fileinformation", "getting file path: " + ex.toString());
+        }
 
-        File f = new File(String.valueOf(uri));
+        File f = new File(path);
         FileInputStream inputStream = null;
         try {
             inputStream = new FileInputStream(f);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.d("fileinformation", e.toString());
         }
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         int i;
@@ -444,7 +516,7 @@ public class MainActivity extends AppCompatActivity {
             }
             inputStream.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.d("fileinformation", e.toString());
         }
         return byteArrayOutputStream.toString();
     }
