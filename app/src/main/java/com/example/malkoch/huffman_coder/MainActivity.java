@@ -137,7 +137,7 @@ class Data {
     String encoded_data;
     int num_of_bits;
     int[] freqs;
-    Map<Character, String> map;
+    Map<String, String> map;
 
     public Data(String d, int b) {
         encoded_data = d;
@@ -186,7 +186,7 @@ class HuffmanNode extends HuffmanTree {
 
 
 class HuffmanEncoder {
-    static Map<Character, String> map = new HashMap<Character, String>();
+    static Map<String, String> map = new HashMap<String, String>();
 
     private static HuffmanTree buildTree(int[] charFreqs) {
         PriorityQueue<HuffmanTree> trees = new PriorityQueue<HuffmanTree>();
@@ -210,7 +210,7 @@ class HuffmanEncoder {
         if(tree instanceof HuffmanLeaf) {
             HuffmanLeaf leaf = (HuffmanLeaf) tree;
 
-            map.put(leaf.value, prefix);
+            map.put("" + leaf.value, prefix);
         }
         else if(tree instanceof HuffmanNode) {
             HuffmanNode node = (HuffmanNode) tree;
@@ -224,7 +224,7 @@ class HuffmanEncoder {
         String ret = "";
 
         for(char c : str.toCharArray()) {
-            ret += map.get(c);
+            ret += map.get("" + c);
         }
 
         System.out.println(ret);
@@ -281,15 +281,15 @@ class HuffmanEncoder {
 }
 
 class HuffmanDecoder {
-    static Map<Character, String> map = new HashMap<Character, String>();
+    static Map<String, String> map = new HashMap<String, String>();
 
-    private static HuffmanTree buildTree(Map<Character, String> m) {
+    private static HuffmanTree buildTree(Map<String, String> m) {
         map = m;
 
         HuffmanNode node = new HuffmanNode();
 
-        for(Map.Entry<Character, String> entry : map.entrySet()) {
-            Character key = entry.getKey();
+        for(Map.Entry<String, String> entry : map.entrySet()) {
+            String key = entry.getKey();
             String value = entry.getValue();
 
             HuffmanNode current_node = node;
@@ -299,11 +299,11 @@ class HuffmanDecoder {
 
                 if(i == value.length() - 1) {
                     if(c == '0') {
-                        current_node.left = new HuffmanLeaf(key);
+                        current_node.left = new HuffmanLeaf(key.charAt(0));
                         //System.out.println(((HuffmanLeaf) current_node.left).value);
                     }
                     else if(c == '1') {
-                        current_node.right = new HuffmanLeaf(key);
+                        current_node.right = new HuffmanLeaf(key.charAt(0));
                         //System.out.println(((HuffmanLeaf) current_node.right).value);
                     }
                 }
@@ -495,8 +495,29 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("fileinformation", fileContent);
 
                         //do jsonify
-                        out.println(HuffmanEncoder.Run(fileContent).encoded_data);
-                        out.flush();
+                        JSONObject json = new JSONObject();
+                        try {
+                            Data ret = HuffmanEncoder.Run(fileContent);
+                            json.put("sender", username);
+                            json.put("reciever", "server");
+
+                            JSONObject j = new JSONObject(ret.map);
+                            json.put("map", j.toString());
+
+                            json.put("len", ret.num_of_bits);
+                            json.put("text", ret.encoded_data);
+
+                            Log.d("serverresponse", "encoded string: " + ret.encoded_data);
+                            Log.d("serverresponse", "map: " + j.toString());
+                            Log.d("serverresponse", "sending: " + json.toString());
+
+                            out.println(json.toString());
+                            out.flush();
+                        }
+                        catch(JSONException e) {
+                            e.printStackTrace();
+                        }
+
                     }
                     catch (FileNotFoundException ex) {
                         Log.d("fileinformation", "reading file: " + ex.toString());
