@@ -17,6 +17,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
@@ -136,6 +137,7 @@ class Data {
     String encoded_data;
     int num_of_bits;
     int[] freqs;
+    Map<Character, String> map;
 
     public Data(String d, int b) {
         encoded_data = d;
@@ -144,53 +146,59 @@ class Data {
 }
 
 abstract class HuffmanTree implements Comparable<HuffmanTree> {
-    public final int frequency; // the frequency of this tree
+    public final int frequency;
     public HuffmanTree(int freq) { frequency = freq; }
 
-    // compares on the frequency
     public int compareTo(HuffmanTree tree) {
         return frequency - tree.frequency;
     }
 }
 
 class HuffmanLeaf extends HuffmanTree {
-    public final char value; // the character this leaf represents
+    public char value;
 
     public HuffmanLeaf(int freq, char val) {
         super(freq);
         value = val;
     }
+
+    public HuffmanLeaf(char val) {
+        super(1);
+        value = val;
+    }
 }
 
 class HuffmanNode extends HuffmanTree {
-    public final HuffmanTree left, right; // subtrees
+    public HuffmanTree left, right;
 
     public HuffmanNode(HuffmanTree l, HuffmanTree r) {
         super(l.frequency + r.frequency);
         left = l;
         right = r;
     }
+
+    public HuffmanNode() {
+        super(1);
+        left = null;
+        right = null;
+    }
 }
 
+
 class HuffmanEncoder {
-    private static Map<Character, String> map = new HashMap<Character, String>();
+    static Map<Character, String> map = new HashMap<Character, String>();
 
     private static HuffmanTree buildTree(int[] charFreqs) {
         PriorityQueue<HuffmanTree> trees = new PriorityQueue<HuffmanTree>();
-        // initially, we have a forest of leaves
-        // one for each non-empty character
         for (int i = 0; i < charFreqs.length; i++)
             if (charFreqs[i] > 0)
                 trees.offer(new HuffmanLeaf(charFreqs[i], (char)i));
 
         assert trees.size() > 0;
-        // loop until there is only one tree left
         while (trees.size() > 1) {
-            // two trees with least frequency
             HuffmanTree a = trees.poll();
             HuffmanTree b = trees.poll();
 
-            // put into new node and re-insert into queue
             trees.offer(new HuffmanNode(a, b));
         }
         return trees.poll();
@@ -212,18 +220,17 @@ class HuffmanEncoder {
         }
     }
 
-    private static Data Encode(HuffmanTree tree, String str) {
-        assert tree != null;
-        //ret is a binary string. something like 010100101011010010101
+    private static Data Encode(String str) {
         String ret = "";
 
         for(char c : str.toCharArray()) {
             ret += map.get(c);
         }
 
+        System.out.println(ret);
+
         char[] chars = new char[0];
-        int offset = 0; // first couple of characters will be char map and how many bit we have encoded
-        // that is why we need an offset
+        int offset = 0;
 
         if(ret.length() % 8 == 0) {
             chars = new char[ret.length() / 8 + offset];
@@ -244,92 +251,88 @@ class HuffmanEncoder {
             }
         }
 
-        //sending the length and the encoded string
-        //encoded string is what we have build from binary string
         return new Data(new String(chars), ret.length());
     }
 
     public static Data Run (String to_encode) {
-        String test = "A paragraph is a component of fictional prose and non-fiction writings. " +
-                "When writing essays, research papers, books, etc., new paragraphs are indented to show their beginnings. " +
-                "Each new paragraph begins with a new indentation. " +
-                "The purpose of a paragraph is to express a speaker's thoughts on a particular point in a clear way " +
-                "that is unique and specific to that paragraph. " +
-                "In other words, paragraphs shouldn't be mixing thoughts or ideas. " +
-                "When a new idea is introduced, generally, a writer will introduce a new paragraph.";
+        //String test = "Lorem ipsem this is a sample file for trying huffmann encoder compresision asadas";
 
         int[] charFreqs = new int[256];
-        // read each character and record the frequencies
 
         for (char c : to_encode.toCharArray())
             charFreqs[c]++;
 
-        // build tree
         HuffmanTree tree = buildTree(charFreqs);
         StoreCodes(tree, "");
 
-        Data ret = Encode(tree, to_encode);
+        System.out.println("String: " + to_encode);
+        System.out.println("String Length: "+ to_encode.length());
+
+        Data ret = Encode(to_encode);
         String encoded_string = ret.encoded_data;
         ret.freqs = charFreqs;
+        ret.map = map;
 
-        Log.d("huffmancoder", "Original String: " + to_encode);
-        Log.d("huffmancoder", "Original String Length: " + to_encode.length());
-
-        Log.d("huffmancoder", "Encoded String: " + encoded_string);
-        Log.d("huffmancoder", "Encoded String Length: " + encoded_string.length());
+        System.out.println("Encoded String: " + encoded_string);
+        System.out.println("Encoded String Length: " + encoded_string.length());
 
         return ret;
     }
 }
 
 class HuffmanDecoder {
-    private static Map<Character, String> map = new HashMap<Character, String>();
+    static Map<Character, String> map = new HashMap<Character, String>();
 
-    private static HuffmanTree buildTree(int[] charFreqs) {
-        PriorityQueue<HuffmanTree> trees = new PriorityQueue<HuffmanTree>();
-        // initially, we have a forest of leaves
-        // one for each non-empty character
-        for (int i = 0; i < charFreqs.length; i++)
-            if (charFreqs[i] > 0)
-                trees.offer(new HuffmanLeaf(charFreqs[i], (char)i));
+    private static HuffmanTree buildTree(Map<Character, String> m) {
+        map = m;
 
-        assert trees.size() > 0;
-        // loop until there is only one tree left
-        while (trees.size() > 1) {
-            // two trees with least frequency
-            HuffmanTree a = trees.poll();
-            HuffmanTree b = trees.poll();
+        HuffmanNode node = new HuffmanNode();
 
-            // put into new node and re-insert into queue
-            trees.offer(new HuffmanNode(a, b));
+        for(Map.Entry<Character, String> entry : map.entrySet()) {
+            Character key = entry.getKey();
+            String value = entry.getValue();
+
+            HuffmanNode current_node = node;
+
+            for(int i = 0; i < value.length(); i++) {
+                char c = value.toCharArray()[i];
+
+                if(i == value.length() - 1) {
+                    if(c == '0') {
+                        current_node.left = new HuffmanLeaf(key);
+                        //System.out.println(((HuffmanLeaf) current_node.left).value);
+                    }
+                    else if(c == '1') {
+                        current_node.right = new HuffmanLeaf(key);
+                        //System.out.println(((HuffmanLeaf) current_node.right).value);
+                    }
+                }
+                else {
+                    if(c == '0') {
+                        if(current_node.left == null) {
+                            current_node.left = new HuffmanNode();
+                        }
+                        current_node = (HuffmanNode) current_node.left;
+                    }
+                    else if(c == '1') {
+                        if(current_node.right == null) {
+                            current_node.right = new HuffmanNode();
+                        }
+                        current_node = (HuffmanNode) current_node.right;
+                    }
+                }
+            }
         }
-        return trees.poll();
+
+        return node;
     }
 
-    private static void StoreCodes(HuffmanTree tree, String prefix) {
-        assert tree != null;
-
-        if(tree instanceof HuffmanLeaf) {
-            HuffmanLeaf leaf = (HuffmanLeaf) tree;
-
-            map.put(leaf.value, prefix);
-        }
-        else if(tree instanceof HuffmanNode) {
-            HuffmanNode node = (HuffmanNode) tree;
-
-            StoreCodes(node.left, prefix + '0');
-            StoreCodes(node.right, prefix + '1');
-        }
-    }
-
-    private static String Decode(HuffmanTree tree, String str, int num) {
+    private static String HuffmanDecode(HuffmanTree tree, String str, int num) {
         assert tree != null;
 
         String binary = "";
         String ret = "";
         HuffmanTree current = tree;
-        //binary will be a binary string that contains only 1 or 0
-        //ret will be decoded string. human readable string
 
         for(int i = 0; i < str.length(); i++) {
             String part = "";
@@ -354,6 +357,8 @@ class HuffmanDecoder {
             binary = binary + part;
         }
 
+        System.out.println(binary);
+
         for(char c : binary.toCharArray()) {
             if(current instanceof HuffmanNode) {
                 HuffmanNode current_node = (HuffmanNode) current;
@@ -376,21 +381,18 @@ class HuffmanDecoder {
     }
 
     public static void Run(Data data) {
+        HuffmanTree tree = buildTree(data.map);
 
-        // build tree
-        HuffmanTree tree = buildTree(data.freqs);
-        StoreCodes(tree, "");
-
-        String decoded_string = Decode(tree, data.encoded_data, data.num_of_bits);
-        Log.d("huffmancoder", "Decoded String: " + decoded_string);
-        Log.d("huffmancoder", "Decoded String Length: " + decoded_string.length());
+        String decoded_string = HuffmanDecode(tree, data.encoded_data, data.num_of_bits);
+        System.out.println("Decoded String: " + decoded_string);
+        System.out.println("Decoded String Length: " + decoded_string.length());
     }
 }
 
 public class MainActivity extends AppCompatActivity {
     private Socket socket;
     private PrintWriter out;
-
+    private BufferedReader in;
 
     public static final int FILE_SELECT_CODE = 0;
     ListView listView;
@@ -430,12 +432,44 @@ public class MainActivity extends AppCompatActivity {
             try {
                 socket = new Socket("192.168.2.106", 12345);
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                 out.println(username);
                 out.flush();
 
                 while(true) {
-                    //start reading
+                    String response = in.readLine();
+                    //Log.d("serverresponse", "response : " + response);
+
+                    try {
+                        JSONObject json_object = new JSONObject(response);
+
+                        if(json_object.has("users")) {
+                            //getting users
+                            Log.d("serverresponse", "getting the userlist");
+                        }
+                        else {
+                            //getting data
+                            String sender = json_object.getString("sender");
+                            String reciever = json_object.getString("reciever");
+                            String map = json_object.getString("map");
+                            int number = json_object.getInt("len");
+                            String text = json_object.getString("text");
+
+                            JSONObject json_map = new JSONObject(map);
+
+                            Log.d("serverresponse", "sender: " + sender);
+                            Log.d("serverresponse", "reciever: " + reciever);
+                            Log.d("serverresponse", "map: " + map);
+                            Log.d("serverresponse", "number: " + number);
+                            Log.d("serverresponse", "text: " + text);
+
+                            //Log.d("serverresponse", "getting the data");
+                        }
+                    }
+                    catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
             catch(UnknownHostException e1) {
@@ -460,6 +494,7 @@ public class MainActivity extends AppCompatActivity {
                         fileContent = ReadFromFile(uri);
                         Log.d("fileinformation", fileContent);
 
+                        //do jsonify
                         out.println(HuffmanEncoder.Run(fileContent).encoded_data);
                         out.flush();
                     }
