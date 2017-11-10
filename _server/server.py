@@ -13,7 +13,7 @@ class ThreadedServer(object):
         self.clients = clients
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        #self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.bind((self.host, self.port))
 
     def listen(self):
@@ -21,7 +21,7 @@ class ThreadedServer(object):
         try:
             while True:
                 client, address = self.sock.accept()
-                client.settimeout(60)
+                #client.settimeout(60)
                 threading.Thread(target = self.listenToClient,args = (client,address)).start()
         except KeyboardInterrupt:
             print("\nServer is closing...")
@@ -86,3 +86,4 @@ if __name__ == "__main__":
     usersList = list()
     clients = dict()
     ThreadedServer('127.0.0.1',12345, usersPort, usersList, clients).listen()
+    #ThreadedServer('0.0.0.0',12345, usersPort, usersList, clients).listen()

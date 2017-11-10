@@ -17,6 +17,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,7 +38,10 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
@@ -133,6 +137,53 @@ class FileUtils {
     }
 }
 
+class JSONUtils {
+    public static Map<String, String> jsonToMap(JSONObject json) throws JSONException {
+        Map<String, String> retMap = new HashMap<String, String>();
+
+        if(json != JSONObject.NULL) {
+            retMap = toMap(json);
+        }
+        return retMap;
+    }
+
+    private static Map<String, String> toMap(JSONObject object) throws JSONException {
+        Map<String, String> map = new HashMap<String, String>();
+
+        Iterator<String> keysItr = object.keys();
+        while(keysItr.hasNext()) {
+            String key = keysItr.next();
+            Object value = object.get(key);
+
+            if(value instanceof JSONArray) {
+                value = toList((JSONArray) value);
+            }
+
+            else if(value instanceof JSONObject) {
+                value = toMap((JSONObject) value);
+            }
+            map.put(key, value.toString());
+        }
+        return map;
+    }
+
+    private static List<String> toList(JSONArray array) throws JSONException {
+        List<String> list = new ArrayList<String>();
+        for(int i = 0; i < array.length(); i++) {
+            Object value = array.get(i);
+            if(value instanceof JSONArray) {
+                value = toList((JSONArray) value);
+            }
+
+            else if(value instanceof JSONObject) {
+                value = toMap((JSONObject) value);
+            }
+            list.add(value.toString());
+        }
+        return list;
+    }
+}
+
 class Data {
     String encoded_data;
     int num_of_bits;
@@ -183,7 +234,6 @@ class HuffmanNode extends HuffmanTree {
         right = null;
     }
 }
-
 
 class HuffmanEncoder {
     static Map<String, String> map = new HashMap<String, String>();
@@ -380,12 +430,13 @@ class HuffmanDecoder {
         return ret;
     }
 
-    public static void Run(Data data) {
+    public static String Run(Data data) {
         HuffmanTree tree = buildTree(data.map);
 
         String decoded_string = HuffmanDecode(tree, data.encoded_data, data.num_of_bits);
         System.out.println("Decoded String: " + decoded_string);
         System.out.println("Decoded String Length: " + decoded_string.length());
+        return decoded_string;
     }
 }
 
@@ -457,12 +508,17 @@ public class MainActivity extends AppCompatActivity {
                             String text = json_object.getString("text");
 
                             JSONObject json_map = new JSONObject(map);
+                            Map<String, String> m = JSONUtils.jsonToMap(json_map);
 
                             Log.d("serverresponse", "sender: " + sender);
                             Log.d("serverresponse", "reciever: " + reciever);
                             Log.d("serverresponse", "map: " + map);
                             Log.d("serverresponse", "number: " + number);
                             Log.d("serverresponse", "text: " + text);
+                            Data d = new Data(text, number);
+                            d.map = m;
+                            String decoded_string = HuffmanDecoder.Run(d);
+                            Log.d("serverresponse", "decoded string: " + decoded_string);
 
                             //Log.d("serverresponse", "getting the data");
                         }

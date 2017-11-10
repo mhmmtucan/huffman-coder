@@ -61,17 +61,19 @@ class ThreadedClient(object):
                     global decodedText,sender
                     sender = jdata["sender"]
                     decoder = HuffmanDecoder()
-                    data = Data()
+                    data = Data(jdata['text'], jdata['len'])
                     data.map = json.loads(jdata['map'])
-                    data.encoded_data = jdata['text']
-                    data.num_of_bits = jdata['len']
+                    #data.encoded_data = jdata['text']
+                    #data.num_of_bits = jdata['len']
                     #decodedText = decoder(jdata['text'],json.loads(jdata['map']),jdata['len'])
                     decodedText = decoder.Run(data)
+                    print(decodedText)
                 
 
 if __name__ == '__main__':
     s = socket.socket()         # Create a socket object
-    host = "127.0.0.1"          # Get local machine name
+    host = "127.0.0.1"
+    #host = "192.168.2.106"          # Get local machine name
     port = 12345                # Reserve a port for your service.
     s.connect((host, port))
     s.sendall("server".encode() + '\n'.encode())

@@ -1,0 +1,1 @@
+Lorem ipsem this is a sample file for trying huffmann encoder compresision asadas
