@@ -68,6 +68,10 @@ class ThreadedClient(object):
                     #decodedText = decoder(jdata['text'],json.loads(jdata['map']),jdata['len'])
                     decodedText = decoder.Run(data)
 
+                    encodedtext_file = open("encodedtext.txt","w",encoding='utf-8')
+                    encodedtext_file.write("%s" % decodedText)
+                    encodedtext_file.close()
+
                     #encoded_file = open('web-' + json_data['sender'] + '-to-' + json_data['reciever'] + '-encoded.txt', 'w', 'utf-8')
                     #encoded_file.write(json_data['sender'] + '\n')
                     #encoded_file.write(json_data['reciever'] + '\n')
