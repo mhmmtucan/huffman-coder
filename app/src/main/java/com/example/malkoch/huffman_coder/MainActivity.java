@@ -9,7 +9,10 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -39,6 +42,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -145,6 +149,16 @@ class JSONUtils {
             retMap = toMap(json);
         }
         return retMap;
+    }
+
+    public static List<String> jsonToList(JSONObject json) throws JSONException {
+        List<String> retList = new ArrayList<String>();
+
+        if(json != JSONObject.NULL) {
+            retList = toList(json.getJSONArray("users"));
+        }
+
+        return retList;
     }
 
     private static Map<String, String> toMap(JSONObject object) throws JSONException {
@@ -447,23 +461,17 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int FILE_SELECT_CODE = 0;
     ListView listView;
+    //private ItemAdapter item_list_adapter;
+    //private List<Item> item_list = new ArrayList<Item>();
     String username;
+    String reciever;
+    List<String> usernames = new ArrayList<String>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        ShowActiveUsers(MainActivity.this);
 
-        ArrayAdapter<String> mAdapter = new ArrayAdapter<String>(MainActivity.this,
-                android.R.layout.simple_list_item_1,
-                getResources().getStringArray(R.array.users));
-        listView = (ListView) findViewById(R.id.listview1);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO: action when item clicked
-            }
-        });
-        listView.setAdapter(mAdapter);
         username = getIntent().getStringExtra("EXTRA_USERNAME");
         Log.d("user",username);
 
@@ -498,6 +506,7 @@ public class MainActivity extends AppCompatActivity {
                         if(json_object.has("users")) {
                             //getting users
                             Log.d("serverresponse", "getting the userlist");
+                            usernames = JSONUtils.jsonToList(json_object);
                         }
                         else {
                             //getting data
@@ -555,7 +564,12 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             Data ret = HuffmanEncoder.Run(fileContent);
                             json.put("sender", username);
-                            json.put("reciever", "server");
+                            if(reciever != null && !reciever.equals("")) {
+                                json.put("reciever", reciever);
+                            }
+                            else {
+                                json.put("reciever", "server");
+                            }
 
                             JSONObject j = new JSONObject(ret.map);
                             json.put("map", j.toString());
@@ -592,13 +606,36 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requst_code, result_code, data);
     }
 
-    public void Show(View v) {
-        //String str = "simple string";
-        //TextView view = (TextView) findViewById(R.id.mytext);
-        //view.setText(str);
-        //Button button = (Button) findViewById(R.id.button);
-        //button.setText(str);
-        ShowFileChooser();
+    public void Refresh(View v) {
+        ShowActiveUsers(MainActivity.this);
+    }
+
+    public void ShowActiveUsers(Context context) {
+        setContentView(R.layout.activity_main);
+        ArrayList<String> users_list = new ArrayList<String>();
+        for(String username : usernames) {
+            if(!username.equals(this.username)) {
+                users_list.add(username);
+            }
+        }
+
+        ArrayAdapter<String> mAdapter = new ArrayAdapter<String>(context,
+                android.R.layout.simple_list_item_1,
+                users_list
+        );
+
+        listView = (ListView) findViewById(R.id.listview1);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id){
+                String name = listView.getAdapter().getItem(position).toString();
+                reciever = name;
+                Log.d("serverresponse", "reciever name: " + reciever);
+                ShowFileChooser();
+            }
+        });
+
+        listView.setAdapter(mAdapter);
     }
 
     private String ReadFromFile(Uri uri) throws FileNotFoundException {

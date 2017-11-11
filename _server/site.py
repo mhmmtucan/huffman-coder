@@ -15,8 +15,8 @@ def home():
     if not q.empty():
         userlist = q.get()
     
-    if "server" in userlist:
-        userlist.remove("server")
+    if "web" in userlist:
+        userlist.remove("web")
     return render_template('home.html', my_list=userlist, decodedText=decodedText, sender=sender)
 
 @app.route('/send', methods = ['POST'])
@@ -30,7 +30,7 @@ def getFile():
     data = encoder.Run(file.read().decode('utf-8'))
     encodedText,freqMap,byteLength = (data.encoded_data, data.map, data.num_of_bits)
     data = dict()
-    data["sender"] = "server"
+    data["sender"] = "web"
     data["reciever"] = reciever
     data["map"] = json.dumps(freqMap)
     data["len"] = byteLength
@@ -72,11 +72,11 @@ class ThreadedClient(object):
 
 if __name__ == '__main__':
     s = socket.socket()         # Create a socket object
-    host = "127.0.0.1"
-    #host = "192.168.2.106"          # Get local machine name
+    #host = "127.0.0.1"
+    host = "192.168.2.106"          # Get local machine name
     port = 12345                # Reserve a port for your service.
     s.connect((host, port))
-    s.sendall("server".encode() + '\n'.encode())
+    s.sendall("web".encode() + '\n'.encode())
     q = queue.Queue()
     userlist = list()
 

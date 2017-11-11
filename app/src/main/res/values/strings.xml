@@ -25,5 +25,5 @@
     <string name="username">Username</string>
     <string name="Login">Login</string>
     <string name="active_users">Active Users</string>
-    <string name="choose_file_btn">CHOOSE FILE</string>
+    <string name="refresh_btn">Refresh</string>
 </resources>

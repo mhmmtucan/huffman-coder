@@ -45,7 +45,11 @@ class ThreadedServer(object):
                         #it is encoded txt use it
                         #send file
                         reciever = json_data["reciever"]
-                        clients[reciever].sendall(json.dumps(json_data).encode() + '\n'.encode())
+                        if reciever == 'server':
+                            print(json.dumps(json_data).encode() + '\n'.encode())
+                            print('we will save the file in server')
+                        else:
+                            clients[reciever].sendall(json.dumps(json_data).encode() + '\n'.encode())
                     except ValueError:
                         username = data
                         print(username, "is connected.")
@@ -85,5 +89,6 @@ if __name__ == "__main__":
     usersPort = dict()
     usersList = list()
     clients = dict()
-    ThreadedServer('127.0.0.1',12345, usersPort, usersList, clients).listen()
-    #ThreadedServer('0.0.0.0',12345, usersPort, usersList, clients).listen()
+    usersList.append('server')
+    #ThreadedServer('127.0.0.1',12345, usersPort, usersList, clients).listen()
+    ThreadedServer('0.0.0.0',12345, usersPort, usersList, clients).listen()
