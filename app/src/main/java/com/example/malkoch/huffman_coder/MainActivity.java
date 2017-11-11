@@ -1,30 +1,24 @@
 package com.example.malkoch.huffman_coder;
 
-import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -33,90 +27,18 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
-
-class Client extends AsyncTask<String, Void, String> {
-    Socket socket;
-
-    public Client(String hostname, int port_number) {
-        try {
-            socket = new Socket(hostname, port_number);
-        }
-        catch (Exception e) {
-            Log.d("error", e.toString());
-        }
-    }
-
-    @Override
-    protected String doInBackground(String... args) {
-        String data = args[0];
-
-        String ret = "";
-
-        try {
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            out.println(data);
-            out.flush();
-
-            while(true) {
-                String response = in.readLine();
-                //Log.d("serverresponse", "response : " + response);
-
-                JSONObject json_object = new JSONObject(response);
-
-                if(json_object.has("users")) {
-                    //getting users
-                    Log.d("serverresponse", "getting the userlist");
-                }
-                else {
-                    //getting data
-                    String sender = json_object.getString("sender");
-                    String reciever = json_object.getString("reciever");
-                    String map = json_object.getString("map");
-                    int number = json_object.getInt("len");
-                    String text = json_object.getString("text");
-
-                    JSONObject json_map = new JSONObject(map);
-
-                    Log.d("serverresponse", "sender: " + sender);
-                    Log.d("serverresponse", "reciever: " + reciever);
-                    Log.d("serverresponse", "map: " + map);
-                    Log.d("serverresponse", "number: " + number);
-                    Log.d("serverresponse", "text: " + text);
-
-                    //Log.d("serverresponse", "getting the data");
-                }
-            }
-        }
-        catch (Exception e) {
-            Log.d("error", e.toString());
-        }
-
-        return ret;
-    }
-
-    @Override
-    protected void onPostExecute(String result) {
-
-    }
-}
 
 class FileUtils {
     public static String GetPath(Context context, Uri uri) throws URISyntaxException {
@@ -467,8 +389,24 @@ public class MainActivity extends AppCompatActivity {
     String username;
     String reciever;
     List<String> usernames = new ArrayList<String>();
+    String str;
 
-    @Override
+    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int which) {
+            switch (which) {
+                case DialogInterface.BUTTON_POSITIVE:
+                    //WriteToFile("/storage/sdcard0/encoded.txt", "sender: " + sender, "receiver: " + reciever, "map: " + map, "len: " + number, "encoded text: " + text);
+                    WriteToFile("/storage/sdcard0/decoded.txt", str);
+                    dialogInterface.dismiss();
+                    break;
+                case DialogInterface.BUTTON_NEGATIVE:
+                    dialogInterface.dismiss();
+                    break;
+            }
+        }
+    };
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ShowActiveUsers(MainActivity.this);
@@ -508,6 +446,13 @@ public class MainActivity extends AppCompatActivity {
                             //getting users
                             Log.d("serverresponse", "getting the userlist");
                             usernames = JSONUtils.jsonToList(json_object);
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ShowActiveUsers(MainActivity.this);
+                                }
+                            });
                         }
                         else {
                             //getting data
@@ -530,10 +475,22 @@ public class MainActivity extends AppCompatActivity {
                             Data d = new Data(text, number);
                             d.map = m;
                             String decoded_string = HuffmanDecoder.Run(d);
+                            str = decoded_string;
                             Log.d("serverresponse", "decoded string: " + decoded_string);
 
-                            WriteToFile("/storage/sdcard0/encoded.txt", "sender: " + sender, "receiver: " + reciever, "map: " + map, "len: " + number, "encoded text: " + text);
-                            WriteToFile("/storage/sdcard0/decoded.txt", "decoded text: " + decoded_string);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                    builder.setMessage("Are you sure");
+                                    builder.setPositiveButton("Yes", dialogClickListener);
+                                    builder.setNegativeButton("No", dialogClickListener);
+                                    builder.show();
+                                }
+                            });
+
+                            //WriteToFile("/storage/sdcard0/encoded.txt", "sender: " + sender, "receiver: " + reciever, "map: " + map, "len: " + number, "encoded text: " + text);
+                            //WriteToFile("/storage/sdcard0/decoded.txt", "decoded text: " + decoded_string);
                         }
                     }
                     catch (JSONException e) {
