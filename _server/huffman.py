@@ -73,8 +73,6 @@ class HuffmanEncoder:
         for c in string:
             ret += self.codes[c]
 
-        print(ret)
-
         chars = ''
         offset = 0
 
@@ -98,7 +96,6 @@ class HuffmanEncoder:
         return Data(chars, len(ret))
         
     def Run(self, to_encode):
-        print(to_encode)
         freqs = [0 for i in range(0, 256)]
         for c in to_encode:
             freqs[ord(c)] += 1
@@ -108,9 +105,6 @@ class HuffmanEncoder:
 
         ret = self.Encode(tree, to_encode)
         ret.map = self.codes
-        print(ret.encoded_data)
-        print(ret.num_of_bits)
-        print(ret.map)
         return ret
 
 class HuffmanDecoder:
@@ -148,7 +142,6 @@ class HuffmanDecoder:
         binary = ''
         ret = ''
         current = tree
-        print(string)
 
         for i in range(0, len(string)):
             part = ''
@@ -167,7 +160,6 @@ class HuffmanDecoder:
                     n >>= 1
                     
             binary = binary + part
-        print(binary)
 
         for c in binary:
             if isinstance(current, HuffmanNode):
@@ -184,5 +176,4 @@ class HuffmanDecoder:
     def Run(self, data):
         tree = self.BuildTree(data.map)
         decoded_string = self.HuffmanDecode(tree, data.encoded_data, data.num_of_bits)
-        print(decoded_string)
         return decoded_string

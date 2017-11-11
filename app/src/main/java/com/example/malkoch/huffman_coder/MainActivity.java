@@ -31,6 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -510,6 +511,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                         else {
                             //getting data
+                            Log.d("serverresponse", "getting the data");
+
                             String sender = json_object.getString("sender");
                             String reciever = json_object.getString("reciever");
                             String map = json_object.getString("map");
@@ -529,7 +532,8 @@ public class MainActivity extends AppCompatActivity {
                             String decoded_string = HuffmanDecoder.Run(d);
                             Log.d("serverresponse", "decoded string: " + decoded_string);
 
-                            //Log.d("serverresponse", "getting the data");
+                            WriteToFile("/storage/sdcard0/encoded.txt", "sender: " + sender, "receiver: " + reciever, "map: " + map, "len: " + number, "encoded text: " + text);
+                            WriteToFile("/storage/sdcard0/decoded.txt", "decoded text: " + decoded_string);
                         }
                     }
                     catch (JSONException e) {
@@ -668,6 +672,27 @@ public class MainActivity extends AppCompatActivity {
             Log.d("fileinformation", e.toString());
         }
         return byteArrayOutputStream.toString();
+    }
+
+    private void WriteToFile(String path, String... args) {
+        File file = new File(path);
+
+        try {
+            FileOutputStream f = new FileOutputStream(file);
+            PrintWriter pw = new PrintWriter(f);
+            for(String data : args) {
+                pw.println(data);
+                pw.flush();
+            }
+            pw.close();
+            f.close();
+        }
+        catch(FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void ShowFileChooser() {

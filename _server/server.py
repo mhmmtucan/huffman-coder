@@ -1,5 +1,5 @@
 import socket, threading, json
-
+from huffman import *
 
 class ThreadedServer(object):
     def __init__(self, host, port, usersPort, usersList, clients):
@@ -46,8 +46,24 @@ class ThreadedServer(object):
                         #send file
                         reciever = json_data["reciever"]
                         if reciever == 'server':
-                            print(json.dumps(json_data).encode() + '\n'.encode())
-                            print('we will save the file in server')
+                            decoder = HuffmanDecoder()
+                            data = Data(json_data['text'], json_data['len'])
+                            data.map = json.loads(json_data['map'])
+                            decoded_text = decoder.Run(data)
+                            print('text to decode: ' + json_data['text'])
+                            #encoded_file = open('server-' + json_data['sender'] + '-to-' + json_data['reciever'] + '-encoded.txt', 'w', 'utf-8')
+                            #encoded_file.write('sender: ' + json_data['sender'] + '\n')
+                            #encoded_file.write('reciever: ' + json_data['reciever'] + '\n')
+                            #encoded_file.write('map: ' + json_data['map'] + '\n')
+                            #encoded_file.write('len: ' + str(json_data['len']) + '\n')
+                            #encoded_file.write('text: ' + json_data['text'] + '\n')
+                            #encoded_file.close()
+
+                            #decoded_file = open('server-' + json_data['sender'] + '-to-' + json_data['reciever'] + '-decoded.txt', 'w', 'utf-8')
+                            #decoded_file.write('text: ' + decoded_text + '\n')
+                            #decoded_file.close()
+
+                            print(decoded_text)
                         else:
                             clients[reciever].sendall(json.dumps(json_data).encode() + '\n'.encode())
                     except ValueError:
